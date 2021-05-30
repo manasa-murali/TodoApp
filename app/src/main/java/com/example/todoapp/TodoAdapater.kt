@@ -8,19 +8,23 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.todoapp.db.Task
-import com.jakewharton.rxrelay3.PublishRelay
-import io.reactivex.rxjava3.core.Observable
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.launch
 
 
 /**
  * Created by Manasa on 26,May,2021
  */
-class TodoAdapater(private var oldData: List<Task>) : RecyclerView.Adapter<TodoAdapater.ViewHolder>() {
+class TodoAdapater(private var oldData: List<Task>) :
+    RecyclerView.Adapter<TodoAdapater.ViewHolder>() {
 
-    private val clickListener: PublishRelay<Int> = PublishRelay.create()
+    private val clickListener = MutableSharedFlow<Int>()
 
-    fun getClickListener(): Observable<Int> {
-        return clickListener
+    fun getClickListener(): SharedFlow<Int> {
+        return clickListener.asSharedFlow()
     }
 
 
@@ -34,13 +38,13 @@ class TodoAdapater(private var oldData: List<Task>) : RecyclerView.Adapter<TodoA
         holder.textView.text = task.data
         holder.checkBox.isChecked = task.isChecked
         holder.itemView.findViewById<View>(R.id.viewholder).setOnClickListener {
-            clickListener.accept(task.id)
+            GlobalScope.launch { clickListener.emit(task.id) }
         }
     }
 
-    fun submitList(itemsList: List<Task>){
+    fun submitList(itemsList: List<Task>) {
         val newData = itemsList
-        DiffUtil.calculateDiff(object :DiffUtil.Callback(){
+        DiffUtil.calculateDiff(object : DiffUtil.Callback() {
             override fun getOldListSize(): Int {
                 return oldData.size
             }

@@ -8,16 +8,16 @@ import android.widget.EditText
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.todoapp.db.DatabaseHolder
 import com.example.todoapp.db.Task
 import com.example.todoapp.db.TodoRepository
-import io.reactivex.rxjava3.disposables.CompositeDisposable
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 class TodoFragment : Fragment(R.layout.fragment_todo) {
-
-    val compositeDisposable = CompositeDisposable()
 
 
     private val viewModel: TodoViewModel by viewModels {
@@ -36,13 +36,14 @@ class TodoFragment : Fragment(R.layout.fragment_todo) {
             recyclerView.adapter = adapter
         }
 
-        compositeDisposable.add(
-        (adapter as TodoAdapater).getClickListener().subscribe {
-            viewModel.performAction(TodoViewModel.ActionType.MarkState(it))
-        })
+        lifecycleScope.launch {
+            (adapter as TodoAdapater).getClickListener().collect {
+                viewModel.performAction(TodoViewModel.ActionType.MarkState(it))
+            }
+        }
 
         viewModel.allTask.observe(viewLifecycleOwner, Observer {
-            adapter.submitList(it)
+            (adapter as TodoAdapater).submitList(it)
         })
 
         view.findViewById<Button>(R.id.add).setOnClickListener {
@@ -61,8 +62,4 @@ class TodoFragment : Fragment(R.layout.fragment_todo) {
 
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        compositeDisposable.dispose()
-    }
 }
