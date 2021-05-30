@@ -1,22 +1,24 @@
 package com.example.todoapp.db
 
+import androidx.lifecycle.LiveData
+
 /**
  * Created by Manasa on 26,May,2021
  */
-class TodoRepository(val todoDB: TodoDatabase) : IRepository {
-    override fun insert(task: Task) {
+class TodoRepository(private val todoDB: TodoDatabase) : IRepository {
+    override suspend fun insert(task: Task) {
         todoDB.getTodoDao().insert(task)
     }
 
-    override fun delete(id: Int) {
+    override suspend fun delete(id: Int) {
         todoDB.getTodoDao().delete(id)
     }
 
-    override fun getAllTasks(): List<Task> {
+    override fun getAllTasks(): LiveData<List<Task>> {
         return todoDB.getTodoDao().getAllTasks()
     }
 
-    override fun changeState(state: Boolean, id: Int) {
-        todoDB.getTodoDao().changeState(state, id)
+    override suspend fun changeState(id: Int) {
+        todoDB.getTodoDao().changeState( id)
     }
 }

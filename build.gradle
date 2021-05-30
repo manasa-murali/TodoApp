@@ -3,6 +3,7 @@ buildscript {
     ext{
         kotlin_version = "1.4.31"
         room_version = "2.3.0"
+        rxBindings = "2.1.1"
     }
     repositories {
         google()

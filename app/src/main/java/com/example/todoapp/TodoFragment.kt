@@ -1,37 +1,60 @@
 package com.example.todoapp
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
+import android.text.TextUtils
 import android.view.View
-import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.todoapp.db.DatabaseHolder
+import com.example.todoapp.db.Task
+import com.example.todoapp.db.TodoRepository
 
-class TodoFragment : Fragment() {
+class TodoFragment : Fragment(R.layout.fragment_todo) {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+
+    private val viewModel: TodoViewModel by viewModels {
+        TodoViewModelFactory(TodoRepository(DatabaseHolder.todoDatabase!!))
+    }
+
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val recyclerView = view.findViewById<RecyclerView>(R.id.todoList)
+        recyclerView.layoutManager = LinearLayoutManager(context)
+
+        var adapter = recyclerView.adapter
+        if (adapter == null) {
+            adapter = TodoAdapater(emptyList())
+            recyclerView.adapter = adapter
+        }
+
+        (adapter as TodoAdapater).getClickListener().subscribe {
+            viewModel.performAction(TodoViewModel.ActionType.MarkState(it))
+        }
+
+        viewModel.allTask.observe(viewLifecycleOwner, Observer {
+            adapter.submitList(it)
+        })
+
+        view.findViewById<Button>(R.id.add).setOnClickListener {
+            val editText = view.findViewById<EditText>(R.id.edittext)
+            if (!TextUtils.isEmpty(editText.text)) {
+                viewModel.performAction(
+                    TodoViewModel.ActionType.Insert(
+                        Task(
+                            data = editText.text.toString(),
+                            isChecked = false
+                        )
+                    )
+                )
+            }
+        }
 
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_todo, container, false)
-    }
-
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment TodoFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) = TodoFragment()
-    }
 }

@@ -1,15 +1,17 @@
 package com.example.todoapp.db
 
+import androidx.lifecycle.LiveData
+
 /**
  * Created by Manasa on 26,May,2021
  */
 interface IRepository {
 
-    fun insert(task: Task)
+    suspend fun insert(task: Task)
 
-    fun delete(id: Int)
+    suspend fun delete(id: Int)
 
-    fun getAllTasks(): List<Task>
+    fun getAllTasks(): LiveData<List<Task>>
 
-    fun changeState(state: Boolean, id: Int)
+    suspend fun changeState(id: Int)
 }

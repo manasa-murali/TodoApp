@@ -9,5 +9,6 @@
         android:id="@+id/todoFragment"
         android:name="com.example.todoapp.TodoFragment"
         android:label="fragment_todo"
-        tools:layout="@layout/fragment_todo" />
+        tools:layout="@layout/fragment_todo" >
+    </fragment>
 </navigation>
