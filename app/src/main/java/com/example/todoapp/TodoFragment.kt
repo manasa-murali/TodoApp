@@ -13,8 +13,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.todoapp.db.DatabaseHolder
 import com.example.todoapp.db.Task
 import com.example.todoapp.db.TodoRepository
+import io.reactivex.rxjava3.disposables.CompositeDisposable
 
 class TodoFragment : Fragment(R.layout.fragment_todo) {
+
+    val compositeDisposable = CompositeDisposable()
 
 
     private val viewModel: TodoViewModel by viewModels {
@@ -33,9 +36,10 @@ class TodoFragment : Fragment(R.layout.fragment_todo) {
             recyclerView.adapter = adapter
         }
 
+        compositeDisposable.add(
         (adapter as TodoAdapater).getClickListener().subscribe {
             viewModel.performAction(TodoViewModel.ActionType.MarkState(it))
-        }
+        })
 
         viewModel.allTask.observe(viewLifecycleOwner, Observer {
             adapter.submitList(it)
@@ -57,4 +61,8 @@ class TodoFragment : Fragment(R.layout.fragment_todo) {
 
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        compositeDisposable.dispose()
+    }
 }
